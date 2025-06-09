@@ -2,41 +2,41 @@ package db
 
 import (
 	"context"
-
+	"fmt"
 	"github.com/redis/go-redis/v9"
 )
 
-type RedisClient struct {
+type RedisClient interface {
+	Close() error
+	HMSet(ctx context.Context, key string, values ...interface{}) error
+	LPush(ctx context.Context, key string, values ...interface{}) error
+}
+
+type redisClient struct {
 	Client *redis.Client
-	Ctx    context.Context
 }
 
-func NewRedisClient(client *redis.Client) *RedisClient {
-	return &RedisClient{
-		Client: client,
-		Ctx:    context.Background(),
-	}
-}
-
-func (c *RedisClient) Close() error {
-	return c.Client.Close()
-}
-
-func (c *RedisClient) Ping() (string, error) {
-	return c.Client.Ping(c.Ctx).Result()
-}
-
-func ConnectRedis(addr string) (*RedisClient, error) {
-	client := redis.NewClient(&redis.Options{
+func NewRedisClient(addr string) (RedisClient, error) {
+	rdb := redis.NewClient(&redis.Options{
 		Addr: addr,
 	})
 
-	r := NewRedisClient(client)
-	defer r.Close()
-
-	if _, err := r.Ping(); err != nil {
-		return nil, err
+	ctx := context.Background()
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		return nil, fmt.Errorf("failed to ping redis: %w", err)
 	}
 
-	return r, nil
+	return &redisClient{Client: rdb}, nil
+}
+
+func (r *redisClient) Close() error {
+	return r.Client.Close()
+}
+
+func (r *redisClient) LPush(ctx context.Context, key string, values ...interface{}) error {
+	return r.Client.LPush(ctx, key, values...).Err()
+}
+
+func (r *redisClient) HMSet(ctx context.Context, key string, value ...interface{}) error {
+	return r.Client.HMSet(ctx, key, value...).Err()
 }
