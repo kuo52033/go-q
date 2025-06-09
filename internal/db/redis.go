@@ -7,23 +7,23 @@ import (
 )
 
 type RedisClient struct {
-	client *redis.Client
-	ctx    context.Context
+	Client *redis.Client
+	Ctx    context.Context
 }
 
 func NewRedisClient(client *redis.Client) *RedisClient {
 	return &RedisClient{
-		client: client,
-		ctx:    context.Background(),
+		Client: client,
+		Ctx:    context.Background(),
 	}
 }
 
 func (c *RedisClient) Close() error {
-	return c.client.Close()
+	return c.Client.Close()
 }
 
 func (c *RedisClient) Ping() (string, error) {
-	return c.client.Ping(c.ctx).Result()
+	return c.Client.Ping(c.Ctx).Result()
 }
 
 func ConnectRedis(addr string) (*RedisClient, error) {
