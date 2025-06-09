@@ -1,8 +1,9 @@
-package queue
+package model
 
-import "time"
-
-type JobId string
+import (
+	"encoding/json"
+	"time"
+)
 
 type JobStatus string
 
@@ -18,7 +19,7 @@ const (
 type JobPayload map[string]interface{}
 
 type Job struct {
-	ID JobId `json:"id" redis:"id"`
+	ID string `json:"id" redis:"id"`
 	Type string `json:"type" redis:"type"`
 	Payload JobPayload `json:"payload" redis:"payload"`
 	Status JobStatus `json:"status" redis:"status"`
@@ -30,4 +31,35 @@ type Job struct {
 	LastError string `json:"last_error,omitempty" redis:"last_error"`
 	ProcessedAt *time.Time `json:"processed_at,omitempty" redis:"processed_at"`
 	Queue string `json:"queue" redis:"queue"`
+}
+
+func (j *Job) ToMap() (map[string]interface{} ,error){
+	jsonPayloadBytes, err := json.Marshal(j.Payload)
+	if err != nil {
+		return nil, err
+	}
+
+	jobMap := map[string]interface{}{
+		"id": j.ID,
+		"type": j.Type,
+		"payload": jsonPayloadBytes,
+		"status": string(j.Status),
+		"created_at": j.CreatedAt.Format(time.RFC3339),
+		"updated_at": j.UpdatedAt.Format(time.RFC3339),
+		"max_attempts": j.MaxAttempts,
+		"attempt_count": j.AttemptCount,
+		"last_error": j.LastError,
+		"queue": j.Queue,
+	}
+
+	if j.ScheduledAt != nil {
+		jobMap["scheduled_at"] = j.ScheduledAt.Format(time.RFC3339)
+	}
+
+	if j.ProcessedAt != nil {
+		jobMap["processed_at"] = j.ProcessedAt.Format(time.RFC3339)
+	}
+
+
+	return jobMap, nil
 }
