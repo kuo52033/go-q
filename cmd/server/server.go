@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kuo-52033/go-q/internal/api/handler/job"
 	"github.com/kuo-52033/go-q/internal/api/routes"
 	"github.com/kuo-52033/go-q/internal/db"
-	"github.com/kuo-52033/go-q/internal/service"
 )
 
 func main() {
@@ -21,14 +20,16 @@ func main() {
 
 	fmt.Println("Redis connected successfully")
 
-	jobService := service.NewJobService(rdb)
-	jobHandler := job.NewHandler(jobService)
-
 	router := gin.Default()
 
-	routes.SetupRoutes(router, &routes.RouteConfig{
-		JobHandler: jobHandler,
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
+	api := router.Group("/api/v1")
+
+	routes.SetupJobModule(api, rdb)
+
+	log.Println("Server is running on port 8080")
 	router.Run(":8080")
 }
