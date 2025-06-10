@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kuo-52033/go-q/internal/db"
+	"github.com/kuo-52033/go-q/internal/error"
 	"github.com/kuo-52033/go-q/internal/model"
 )
 
@@ -17,7 +18,7 @@ type JobService interface {
 		payload model.JobPayload, 
 		queueName string, 
 		maxAttempts int,
-	) (*model.Job, error)
+	) (*model.Job, *error.Error)
 }
 
 type jobService struct {
@@ -34,7 +35,7 @@ func (s *jobService) CreateJob(
 	payload model.JobPayload, 
 	queueName string, 
 	maxAttempts int,
-) (*model.Job, error) {
+) (*model.Job, *error.Error) {
 	job := &model.Job{
 		ID: uuid.New().String(),
 		Type: jobType,
@@ -49,18 +50,24 @@ func (s *jobService) CreateJob(
 	key := fmt.Sprintf("job:%s", job.ID)
 	jobMap, err := job.ToMap()
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert job to map: %w", err)
+		return nil, error.InternalServerError(error.JOB_CREATE_FAILED, map[string]interface{}{
+			"error": err.Error(),
+		})
 	}
 	err = s.rdb.HMSet(ctx, key, jobMap)
 	if err != nil {
-		return nil, fmt.Errorf("failed to set job in hash: %w", err)
+		return nil, error.InternalServerError(error.JOB_CREATE_FAILED, map[string]interface{}{
+			"error": err.Error(),
+		})
 	}
 
 	listKey := fmt.Sprintf("queue:%s", queueName)
 	err = s.rdb.LPush(ctx, listKey, job.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to push job to list: %w", err)
+		return nil, error.InternalServerError(error.JOB_CREATE_FAILED, map[string]interface{}{
+			"error": err.Error(),
+		})
 	}
 
-	return job, nil
+	return job, nil	
 }

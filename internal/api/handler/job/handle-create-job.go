@@ -17,13 +17,13 @@ type CreateJobRequest struct {
 func (h *Handler) HandleCreateJob(c *gin.Context) {
 	var req CreateJobRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 
 	job, err := h.jobService.CreateJob(c.Request.Context(), req.JobType, req.Payload, req.QueueName, req.MaxAttempts)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 

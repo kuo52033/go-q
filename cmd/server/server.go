@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/kuo-52033/go-q/internal/api/routes"
 	"github.com/kuo-52033/go-q/internal/db"
+	"github.com/kuo-52033/go-q/internal/api/middleware/common"
 )
 
 func main() {
@@ -35,6 +36,8 @@ func main() {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
+
+	router.Use(common.ErrorHandler())
 
 	api := router.Group("/api/v1")
 
