@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"github.com/gin-gonic/gin"
-	"github.com/kuo-52033/go-q/internal/error"
+	"github.com/kuo-52033/go-q/internal/myerror"
 )
 
 func ErrorHandler() gin.HandlerFunc {
@@ -14,7 +14,7 @@ func ErrorHandler() gin.HandlerFunc {
 		if len(c.Errors) > 0 {
 			err := c.Errors.Last().Err
 
-			var myError *error.Error
+			var myError *myerror.MyError
 			if errors.As(err, &myError) {
 				c.JSON(myError.HTTPStatus, gin.H{
 					"code": myError.Code,

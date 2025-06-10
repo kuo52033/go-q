@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kuo-52033/go-q/internal/db"
-	"github.com/kuo-52033/go-q/internal/error"
+	"github.com/kuo-52033/go-q/internal/myerror"
 	"github.com/kuo-52033/go-q/internal/model"
 )
 
@@ -18,7 +18,7 @@ type JobService interface {
 		payload model.JobPayload, 
 		queueName string, 
 		maxAttempts int,
-	) (*model.Job, *error.Error)
+	) (*model.Job, error)
 }
 
 type jobService struct {
@@ -35,7 +35,7 @@ func (s *jobService) CreateJob(
 	payload model.JobPayload, 
 	queueName string, 
 	maxAttempts int,
-) (*model.Job, *error.Error) {
+) (*model.Job, error) {
 	job := &model.Job{
 		ID: uuid.New().String(),
 		Type: jobType,
@@ -50,13 +50,13 @@ func (s *jobService) CreateJob(
 	key := fmt.Sprintf("job:%s", job.ID)
 	jobMap, err := job.ToMap()
 	if err != nil {
-		return nil, error.InternalServerError(error.JOB_CREATE_FAILED, map[string]interface{}{
+		return nil, myerror.InternalServerError(myerror.JOB_CREATE_FAILED, map[string]interface{}{
 			"error": err.Error(),
 		})
 	}
 	err = s.rdb.HMSet(ctx, key, jobMap)
 	if err != nil {
-		return nil, error.InternalServerError(error.JOB_CREATE_FAILED, map[string]interface{}{
+		return nil, myerror.InternalServerError(myerror.JOB_CREATE_FAILED, map[string]interface{}{
 			"error": err.Error(),
 		})
 	}
@@ -64,7 +64,7 @@ func (s *jobService) CreateJob(
 	listKey := fmt.Sprintf("queue:%s", queueName)
 	err = s.rdb.LPush(ctx, listKey, job.ID)
 	if err != nil {
-		return nil, error.InternalServerError(error.JOB_CREATE_FAILED, map[string]interface{}{
+		return nil, myerror.InternalServerError(myerror.JOB_CREATE_FAILED, map[string]interface{}{
 			"error": err.Error(),
 		})
 	}

@@ -1,20 +1,20 @@
-package error
+package myerror
 
 import "net/http"
 
-type Error struct {
+type MyError struct {
 	HTTPStatus int    `json:"-"`
 	Code       string `json:"code"`
 	Message    string `json:"message"`
 	Extra      map[string]interface{} `json:"extra"`
 }
 
-func (e *Error) Error() string {
+func (e *MyError) Error() string {
 	return e.Message
 }
 
-func NotFound(e ErrorCode, extra map[string]interface{}) *Error {
-	return &Error{
+func NotFound(e ErrorCode, extra map[string]interface{}) *MyError {
+	return &MyError{
 		HTTPStatus: http.StatusNotFound,
 		Code:       e.Code,
 		Message:    e.Message,
@@ -22,8 +22,8 @@ func NotFound(e ErrorCode, extra map[string]interface{}) *Error {
 	}
 }
 
-func RequestValidationError(e ErrorCode, extra map[string]interface{}) *Error {
-	return &Error{
+func RequestValidationError(e ErrorCode, extra map[string]interface{}) *MyError {
+	return &MyError{
 		HTTPStatus: http.StatusBadRequest,
 		Code:       e.Code,
 		Message:    e.Message,
@@ -31,8 +31,8 @@ func RequestValidationError(e ErrorCode, extra map[string]interface{}) *Error {
 	}
 }
 
-func Forbidden(e ErrorCode, extra map[string]interface{}) *Error {
-	return &Error{
+func Forbidden(e ErrorCode, extra map[string]interface{}) *MyError {
+	return &MyError{
 		HTTPStatus: http.StatusForbidden,
 		Code:       e.Code,
 		Message:    e.Message,
@@ -40,8 +40,8 @@ func Forbidden(e ErrorCode, extra map[string]interface{}) *Error {
 	}
 }
 
-func InternalServerError(e ErrorCode, extra map[string]interface{}) *Error {
-	return &Error{
+func InternalServerError(e ErrorCode, extra map[string]interface{}) *MyError {
+	return &MyError{
 		HTTPStatus: http.StatusInternalServerError,
 		Code:       e.Code,
 		Message:    e.Message,
@@ -49,8 +49,8 @@ func InternalServerError(e ErrorCode, extra map[string]interface{}) *Error {
 	}
 }
 
-func Unauthorized(e ErrorCode, extra map[string]interface{}) *Error {
-	return &Error{
+func Unauthorized(e ErrorCode, extra map[string]interface{}) *MyError {
+	return &MyError{
 		HTTPStatus: http.StatusUnauthorized,
 		Code:       e.Code,
 		Message:    e.Message,

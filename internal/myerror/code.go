@@ -1,4 +1,4 @@
-package error
+package myerror
 
 type ErrorCode struct{
 	Code string
