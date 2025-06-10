@@ -4,21 +4,31 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/kuo-52033/go-q/internal/api/routes"
 	"github.com/kuo-52033/go-q/internal/db"
 )
 
 func main() {
-	rdb, err := db.NewRedisClient("localhost:6379")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
+	redisAddr := os.Getenv("REDIS_URL")
+	serverPort := os.Getenv("SERVER_PORT")
+
+	rdb, err := db.NewRedisClient(redisAddr)
 	if err != nil {
 		log.Fatalf("Failed to connect to Redis: %v", err)
 	}
 
 	defer rdb.Close()
 
-	fmt.Println("Redis connected successfully")
+	log.Println("Redis connected successfully")
 
 	router := gin.Default()
 
@@ -30,6 +40,6 @@ func main() {
 
 	routes.SetupJobModule(api, rdb)
 
-	log.Println("Server is running on port 8080")
-	router.Run(":8080")
+	log.Printf("Server is running on port %s", serverPort)
+	router.Run(fmt.Sprintf(":%s", serverPort))
 }
