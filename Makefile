@@ -1,8 +1,8 @@
 build:
-	go build -o go-q cmd/server/server.go
-	codesign --sign - --force --deep ./go-q
+	go build -o ./tmp/go-q cmd/server/server.go
+	codesign --sign - --force --deep ./tmp/go-q
 run:
-	./go-q
+	./tmp/go-q
 start:
 	make build
 	make run
