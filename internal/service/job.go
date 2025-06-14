@@ -10,7 +10,7 @@ import (
 )
 
 type JobStore interface {
-	SaveJobHash(ctx context.Context, job *model.Job) error
+	SaveJob(ctx context.Context, job *model.Job) error
 	EnqueueJobId(ctx context.Context, queueName string, jobID string) error
 }
 
@@ -49,7 +49,7 @@ func (s *jobService) CreateJob(
 		MaxAttempts: maxAttempts,
 	}	
 
-	if err := s.jobStore.SaveJobHash(ctx, job); err != nil {
+	if err := s.jobStore.SaveJob(ctx, job); err != nil {
 		return nil, myerror.InternalServerError(myerror.JOB_CREATE_FAILED, map[string]interface{}{
 			"error": err.Error(),
 		})

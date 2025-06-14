@@ -9,7 +9,7 @@ import (
 )
 
 func SetupJobModule(router *gin.RouterGroup, rdb *redis.Client) {
-	jobStore := store.NewJobStore(rdb)
+	jobStore := store.NewRedisJobStore(rdb)
 	jobService := service.NewJobService(jobStore)
 	jobHandler := job.NewHandler(jobService)
 

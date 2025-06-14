@@ -11,11 +11,11 @@ type RedisJobStore struct {
 	rdb *redis.Client
 }
 
-func NewJobStore(rdb *redis.Client) *RedisJobStore {
+func NewRedisJobStore(rdb *redis.Client) *RedisJobStore {
 	return &RedisJobStore{rdb: rdb}
 }
 
-func (s *RedisJobStore) SaveJobHash(ctx context.Context, job *model.Job) error {
+func (s *RedisJobStore) SaveJob(ctx context.Context, job *model.Job) error {
 	key := fmt.Sprintf("job:%s", job.ID)
 	jobMap, err := job.ToMap()
 	if err != nil {
