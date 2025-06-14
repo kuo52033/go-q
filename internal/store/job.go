@@ -7,20 +7,15 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type JobStore interface {
-	CreateJob(ctx context.Context, job *model.Job) error
-	PushJobToQueue(ctx context.Context, queueName string, jobID string) error
-}
-
-type jobStore struct {
+type RedisJobStore struct {
 	rdb *redis.Client
 }
 
-func NewJobStore(rdb *redis.Client) JobStore {
-	return &jobStore{rdb: rdb}
+func NewJobStore(rdb *redis.Client) *RedisJobStore {
+	return &RedisJobStore{rdb: rdb}
 }
 
-func (s *jobStore) CreateJob(ctx context.Context, job *model.Job) error {
+func (s *RedisJobStore) SaveJobHash(ctx context.Context, job *model.Job) error {
 	key := fmt.Sprintf("job:%s", job.ID)
 	jobMap, err := job.ToMap()
 	if err != nil {
@@ -29,7 +24,7 @@ func (s *jobStore) CreateJob(ctx context.Context, job *model.Job) error {
 	return s.rdb.HMSet(ctx, key, jobMap).Err()
 }
 
-func (s *jobStore) PushJobToQueue(ctx context.Context, queueName string, jobID string) error {
+func (s *RedisJobStore) EnqueueJobId(ctx context.Context, queueName string, jobID string) error {
 	listKey := fmt.Sprintf("queue:%s", queueName)
 	return s.rdb.LPush(ctx, listKey, jobID).Err()
 }
