@@ -19,5 +19,9 @@ func SetupJobModule(router *gin.RouterGroup, rdb *redis.Client) {
 			"/", 
 			jobHandler.HandleCreateJob,
 		)
+		jobGroup.GET(
+			"/:job_id",
+			jobHandler.HandleGetJob,
+		)
 	}
 }
