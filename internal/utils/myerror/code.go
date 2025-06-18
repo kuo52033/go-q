@@ -10,4 +10,8 @@ var (
 		Code: "001",
 		Message: "Failed to create job",
 	}
+	JOB_GET_FAILED = ErrorCode{
+		Code: "002",
+		Message: "Failed to get job",
+	}
 )
