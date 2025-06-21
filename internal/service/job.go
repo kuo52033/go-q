@@ -14,6 +14,7 @@ type JobStore interface {
 	EnqueueJobId(ctx context.Context, queueName string, jobID string) error
 	DequeueJobId(ctx context.Context, queueName string, timeout time.Duration) (string, error)
 	GetJobById(ctx context.Context, jobID string) (*model.Job, error)
+	UpdateJobStatus(ctx context.Context, jobID string, status model.JobStatus) error
 }
 
 type JobService interface {

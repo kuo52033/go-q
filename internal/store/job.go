@@ -46,3 +46,8 @@ func (s *RedisJobStore) GetJobById(ctx context.Context, jobID string) (*model.Jo
 	}
 	return &job, nil
 }
+
+func (s *RedisJobStore) UpdateJobStatus(ctx context.Context, jobID string, status model.JobStatus) error {
+	key := fmt.Sprintf("job:%s", jobID)
+	return s.rdb.HSet(ctx, key, "status", status).Err()
+}
