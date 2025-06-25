@@ -37,6 +37,11 @@ func (s *RedisJobStore) DequeueJobId(ctx context.Context, queueName string, time
 	return jobID[1], nil
 }
 
+func (s *RedisJobStore) ReEnqueueJobId(ctx context.Context, queueName string, jobID string) error {
+	listKey := fmt.Sprintf("queue:%s", queueName)
+	return s.rdb.RPush(ctx, listKey, jobID).Err()
+}
+
 func (s *RedisJobStore) GetJobById(ctx context.Context, jobID string) (*model.Job, error) {
 	var job model.Job
 	key := fmt.Sprintf("job:%s", jobID)

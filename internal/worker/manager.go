@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -51,30 +52,49 @@ func (m *Manager) StartWorker(ctx context.Context, queueName string) {
 	}
 
 	for{
-		select {
-			case <-ctx.Done():
-				log.Println("Worker for queue", queueName, "stopped")
-				close(jobChan)
-				log.Println("Waiting for workers to finish...")
-				workerWg.Wait()
-				return
-			default:
-				jobId, err := m.jobStore.DequeueJobId(ctx, queueName, 5*time.Second)
-				if err != nil {
-					if err == redis.Nil {
+		jobId, err := m.jobStore.DequeueJobId(ctx, queueName, 5*time.Second)
+		if err != nil {
+			log.Println("get jobId error:", err)
+			if errors.Is(err, redis.Nil) {
+
+				select {
+					case <-ctx.Done():
+						goto cleanUp
+					default:
 						continue
-					}
-					log.Printf("Error dequeuing job: %v", err)
-					// prevent busy loop
-					time.Sleep(1 * time.Second)
+				}
+			}
+
+			log.Printf("Error dequeuing job from '%s': %v. Retrying...", queueName, err)
+
+			select {
+				case <-time.After(5 * time.Second):
 					continue
+				case <-ctx.Done():
+					goto cleanUp
+			}
+		}
+
+		if jobId == "" {
+			continue
+		}
+
+		select {
+			case jobChan <- jobId:
+				log.Println("Dequeued job:", jobId)
+			case <-ctx.Done():
+				log.Println("Context done, re-enqueueing job:", jobId)
+				if err := m.jobStore.ReEnqueueJobId(ctx, queueName, jobId); err != nil {
+					log.Printf("Failed to re-enqueue job %s: %v", jobId, err)
 				}
-				if jobId != "" {
-					jobChan <- jobId
-				}
-		}	
+				goto cleanUp
+		}
 	}
 
+	cleanUp:
+		close(jobChan)
+		log.Println("Waiting for workers to finish...")
+		workerWg.Wait()
 }
 
 func (m *Manager) processJobs(ctx context.Context, jobChan <-chan string) {

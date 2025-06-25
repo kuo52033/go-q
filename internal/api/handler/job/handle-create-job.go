@@ -8,10 +8,10 @@ import (
 )
 
 type CreateJobRequest struct {
-	JobType string `json:"job_type"`
-	Payload model.JobPayload `json:"payload"`
-	QueueName string `json:"queue_name"`
-	MaxAttempts int `json:"max_attempts"`
+	JobType string `json:"JobType"`
+	Payload model.JobPayload `json:"Payload"`
+	QueueName string `json:"QueueName"`
+	MaxAttempts int `json:"MaxAttempts"`
 }
 
 func (h *Handler) HandleCreateJob(c *gin.Context) {
