@@ -32,10 +32,12 @@ dev: build
 	@$(TARGET_WORKER) 
 
 run-server: build-server
+	@pkill -f $(TARGET_SERVER) || true
 	@echo "Running server..."
 	@$(TARGET_SERVER)
 
 run-worker: build-worker
+	@pkill -f $(TARGET_WORKER) || true
 	@echo "Running worker..."
 	@$(TARGET_WORKER)
 
