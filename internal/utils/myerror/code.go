@@ -14,4 +14,8 @@ var (
 		Code: "002",
 		Message: "Failed to get job",
 	}
+	REQUEST_VALIDATION_ERROR = ErrorCode{
+		Code: "003",
+		Message: "Request validation error",
+	}
 )

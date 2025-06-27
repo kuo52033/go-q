@@ -1,4 +1,4 @@
-package job
+package jobHandler
 
 import "github.com/kuo-52033/go-q/internal/service"
 
